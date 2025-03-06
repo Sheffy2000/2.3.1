@@ -2,6 +2,7 @@ package web.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -9,14 +10,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 import web.model.User;
 import web.service.UserService;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @Controller
-public class MyController {
+public class UserController {
 
     private final UserService userService;
 
-    public MyController(UserService userService) {
+    public UserController(UserService userService) {
         this.userService = userService;
     }
 
@@ -30,12 +32,24 @@ public class MyController {
     @GetMapping(value = "/addUser")
     public String showUserInfo(Model model) {
         model.addAttribute ("user", new User ());
-        return "userForm";
+        return "userFormForAdd";
     }
 
     @PostMapping(value = "/addUser")
-    public String addUser(@ModelAttribute User user) {
+    public String addUser(@Valid @ModelAttribute User user, BindingResult bindingResult) {
+        if (bindingResult.hasErrors ()) {
+            return "userFormForAdd";
+        }
         userService.addUser (user);
+        return "redirect:/";
+    }
+
+    @PostMapping(value = "/updateUser")
+    public String updateUser(@Valid @ModelAttribute User user, BindingResult bindingResult) {
+        if (bindingResult.hasErrors ()) {
+            return "userFormForUpdate";
+        }
+        userService.updateUser (user);
         return "redirect:/";
     }
 
@@ -43,7 +57,7 @@ public class MyController {
     public String updateInfo(@RequestParam("id") int id, Model model) {
         User user = userService.getUserById (id);
         model.addAttribute ("user", user);
-        return "userForm";
+        return "userFormForUpdate";
     }
 
     @GetMapping("deleteUser")
